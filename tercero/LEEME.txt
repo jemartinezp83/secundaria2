@@ -1,0 +1,10 @@
+Secundaria 3.° — versión para iPad (app instalable, funciona sin internet)
+
+1) Dirección de la app: https://jemartinezp83.github.io/secundaria2/tercero/
+   (está publicada en la carpeta "tercero" del mismo repositorio de GitHub Pages que la app de 2.°).
+2) En el iPad abre esa dirección en Safari (con internet, solo la primera vez).
+3) Toca Compartir (cuadro con flecha) > "Agregar a pantalla de inicio" > Agregar.
+4) Abre la app desde el ícono verde "Secundaria 3°". A partir de aquí funciona sin internet.
+5) Respaldo: Ajustes > Guardar avance en archivo > "Guardar en Archivos". Hazlo cada semana.
+   El avance de 3.° se guarda aparte del de 2.°: usar una app no afecta a la otra.
+Actualizaciones: al abrir la app con internet descarga sola la versión nueva; el avance no se borra.
