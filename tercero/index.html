@@ -2416,121 +2416,6 @@ bankTopic({ id: 'ar_inclusion', eje: 'arso', m: 9, title: 'Arte incluyente y com
     [5, '¿Qué gana una comunidad con el arte incluyente?', 'Más personas participan y aportan su mirada', ['Nada, solo gasta más recursos', 'Menos público en los eventos', 'Obras más aburridas']]
   ] });
 
-/* ===== TECNOLOGÍA 3.° (Campo formativo De lo Humano y lo Comunitario) =====
-   Contenidos del Programa Sintético de la Fase 6 (3.er grado, Tecnología) y del libro De lo humano y lo comunitario 3.er grado. */
-registerSubject({ id: 'tecnologia', short: 'Tecnología', name: 'Tecnología', icon: '🛠️', color: '#334155', campo: 'De lo Humano y lo Comunitario',
-  temario: 'Contenidos de Tecnología de 3.er grado del Programa Sintético de la Fase 6 (SEP) y del libro De lo humano y lo comunitario 3.er grado (Colección Nanahuatzin).',
-  errTip: 'En Tecnología ayuda relacionar cada concepto con un objeto o proceso real de la casa o la comunidad.'
-}, {
-  tpro: { name: 'Procesos técnicos y emprendimiento', color: '#334155' },
-  tdis: { name: 'Evaluación y planeación de sistemas', color: '#EA580C' }
-});
-
-bankTopic({ id: 'te_factores', eje: 'tpro', m: 1, title: 'Factores que influyen en los procesos técnicos',
-  nem: 'Factores culturales, sociales, económicos y naturales que influyen en la creación y transformación de los procesos técnicos.',
-  formula: 'Factores: naturales (recursos y clima disponibles), económicos (costos, mercado), sociales y culturales (necesidades, costumbres, valores), científicos (conocimientos). Necesidad → técnica → producto → efectos en sociedad y naturaleza.',
-  lesson: lesson({ k: 'Ninguna técnica surge sola: responde a necesidades, depende de los recursos de cada lugar y cambia con las ideas, la economía y la ciencia de cada época.',
-    p: ['<b>Naturales:</b> en Tabasco, el clima cálido y húmedo y los ríos influyen en las casas elevadas, la pesca y el cultivo de cacao.', '<b>Económicos:</b> el costo de materiales y energía decide qué técnica conviene.', '<b>Culturales:</b> las costumbres definen qué se produce (el chocolate tradicional, las jícaras labradas).', '<b>Científicos:</b> nuevos conocimientos permiten nuevas técnicas (refrigeración, energía solar).', 'Las técnicas también tienen efectos: pueden mejorar la vida o generar contaminación.'],
-    ex: 'El proceso del cacao en Tabasco combina saberes mayas (fermentar y tostar) con maquinaria moderna para hacer chocolate.',
-    er: ['Pensar que la técnica es solo usar máquinas.', 'Creer que las técnicas tradicionales no tienen conocimiento detrás.'],
-    v: 'Para entender por qué cada comunidad produce de forma distinta.' }),
-  qs: [
-    [1, 'El clima y los recursos de una región son factores:', 'Naturales', ['Económicos', 'Políticos', 'Digitales']],
-    [1, 'El costo de los materiales es un factor:', 'Económico', ['Natural', 'Cultural', 'Religioso']],
-    [2, '¿Qué cultivo tradicional de Tabasco tiene raíces mayas?', 'El cacao', ['El trigo', 'La uva', 'La manzana']],
-    [2, 'Las costumbres que definen qué se produce son un factor:', 'Cultural', ['Natural', 'Químico', 'Geográfico']],
-    [3, '¿Por qué las casas en zonas inundables suelen construirse elevadas?', 'Se adaptan a un factor natural: el agua', ['Porque es una moda reciente', 'Porque es más barato siempre', 'Porque lo exige la cultura europea']],
-    [3, '¿Qué factor permitió crear la refrigeración?', 'El conocimiento científico', ['La costumbre religiosa', 'El clima frío', 'La moda']],
-    [4, '¿Qué demuestra el proceso del chocolate en Tabasco?', 'La combinación de saberes tradicionales y modernos', ['Que solo sirven las máquinas', 'Que la técnica no cambia', 'Que el cacao no tiene historia']],
-    [4, '¿Por qué una misma necesidad se resuelve distinto en cada región?', 'Cambian los recursos, la cultura y la economía', ['Porque las necesidades son distintas siempre', 'Porque la técnica es igual en todo el mundo', 'Porque así lo decide el gobierno']],
-    [5, 'Una técnica mejora la producción pero contamina un río. ¿Qué debe considerarse?', 'Sus efectos sociales y ambientales', ['Solo cuánto se produce', 'Solo el costo de las máquinas', 'Nada, el progreso no se detiene']],
-    [5, '¿Por qué las técnicas tradicionales tienen valor?', 'Contienen conocimiento probado por generaciones', ['Porque son siempre más rápidas', 'Porque no usan herramientas', 'No tienen ningún valor actual']]
-  ] });
-
-bankTopic({ id: 'te_emprendimiento', eje: 'tpro', m: 3, title: 'Procesos técnicos y emprendimientos',
-  nem: 'Procesos técnicos en emprendimientos productivos y de servicios comunitarios; costos, insumos y organización.',
-  formula: 'Proceso productivo: insumos (materiales, energía, información) → transformación (acciones técnicas con herramientas y máquinas) → producto o servicio → residuos. Costo de producción = materiales + mano de obra + energía + otros gastos. Ganancia = ingreso − costo.',
-  lesson: lesson({ k: 'Un emprendimiento convierte una necesidad de la comunidad en un producto o servicio. Para que funcione hay que conocer el proceso técnico y sus costos.',
-    p: ['<b>Insumos:</b> todo lo que entra al proceso: materia prima, energía, información.', '<b>Transformación:</b> acciones técnicas ordenadas (cortar, mezclar, ensamblar, hornear).', '<b>Costo de producción:</b> suma de todo lo que cuesta producir; incluye tu tiempo de trabajo.', '<b>Precio:</b> debe cubrir el costo y dejar una ganancia razonable.', 'Un emprendimiento comunitario o cooperativo reparte beneficios entre sus integrantes y atiende necesidades locales.'],
-    ex: 'Para vender 20 panes: harina, azúcar y levadura $150, gas $30, tu tiempo $100 → costo $280; cada pan cuesta $14; si lo vendes en $18, ganas $4 por pan.',
-    er: ['Olvidar contar la mano de obra o la energía en el costo.', 'Fijar el precio sin calcular el costo.'],
-    v: 'Para emprender proyectos sostenibles y tomar decisiones económicas informadas.' }),
-  qs: [
-    [1, 'La harina para hacer pan es un:', 'Insumo', ['Residuo', 'Producto final', 'Servicio']],
-    [1, 'Ganancia = ingreso −', 'Costo', ['Precio', 'Venta', 'Producto']],
-    [2, '¿Qué gasto se olvida con frecuencia al calcular costos?', 'La mano de obra', ['La materia prima', 'El producto final', 'El nombre de la marca']],
-    [2, 'Hornear, cortar y ensamblar son:', 'Acciones de transformación', ['Insumos', 'Residuos', 'Ganancias']],
-    [3, 'Si producir 10 pulseras cuesta $200, ¿cuánto cuesta cada una?', '$20', ['$10', '$200', '$2']],
-    [3, '¿Qué caracteriza a un emprendimiento cooperativo?', 'Reparte beneficios entre sus integrantes', ['Solo beneficia al dueño', 'No tiene ningún costo', 'No atiende necesidades locales']],
-    [4, 'Cada pan cuesta $14 y se vende en $18. ¿Cuánto se gana por 50 panes?', '$200', ['$900', '$700', '$4']],
-    [4, '¿Por qué el precio debe calcularse a partir del costo?', 'Para no perder dinero al vender', ['Para que sea igual al de la competencia', 'Porque el costo no importa', 'Para que el producto sea gratis']],
-    [5, 'Un emprendimiento genera muchos residuos plásticos. ¿Qué mejora conviene?', 'Cambiar insumos o reutilizar residuos', ['Ignorarlo si hay ganancias', 'Subir el precio sin cambiar nada', 'Tirar los residuos en el río']],
-    [5, '¿Qué pasa si vendes por debajo del costo?', 'Pierdes dinero en cada venta', ['Ganas más clientes y más dinero', 'El costo baja automáticamente', 'No pasa nada importante']]
-  ] });
-
-bankTopic({ id: 'te_comunicacion', eje: 'tpro', m: 5, title: 'Comunicación técnica: dibujo, croquis y manuales',
-  nem: 'Comunicación técnica de procesos y productos: croquis, bocetos, dibujo técnico, diagramas de flujo y manuales.',
-  formula: 'Boceto: dibujo rápido de una idea. Croquis: dibujo a mano alzada con medidas. Dibujo técnico: a escala, con vistas (frontal, superior, lateral) y acotaciones. Diagrama de flujo: secuencia de pasos (inicio/fin ○, proceso ▭, decisión ◇). Manual: instrucciones claras con imágenes.',
-  lesson: lesson({ k: 'Para que otra persona pueda fabricar, usar o reparar un objeto, la información técnica debe ser clara, precisa y estandarizada.',
-    p: ['<b>Vistas:</b> frontal, superior y lateral muestran el objeto desde distintos lados para que no haya dudas.', '<b>Acotaciones:</b> líneas con las medidas reales del objeto.', '<b>Escala:</b> 1:10 significa que 1 cm del dibujo son 10 cm reales.', '<b>Diagrama de flujo:</b> ordena los pasos de un proceso; los rombos indican decisiones con dos salidas (sí/no).', '<b>Manual:</b> pasos numerados, verbos en imperativo, imágenes y advertencias de seguridad.'],
-    ex: 'Las instrucciones de un mueble para armar usan dibujos y números en lugar de texto para que se entiendan en cualquier idioma.',
-    er: ['Hacer un dibujo técnico sin medidas.', 'Confundir boceto (idea) con plano (para fabricar).'],
-    v: 'Para comunicar tus diseños y entender instructivos y planos.' }),
-  qs: [
-    [1, 'Un dibujo rápido de una idea, sin medidas exactas, es un:', 'Boceto', ['Plano a escala', 'Manual', 'Diagrama de flujo']],
-    [1, 'En un diagrama de flujo, la figura que indica una decisión es el:', 'Rombo', ['Rectángulo', 'Círculo', 'Triángulo']],
-    [2, 'Las medidas que se anotan en un dibujo técnico se llaman:', 'Acotaciones', ['Bocetos', 'Vistas', 'Escalas']],
-    [2, 'En escala 1:10, 5 cm del dibujo equivalen a:', '50 cm reales', ['5 cm reales', '15 cm reales', '0.5 cm reales']],
-    [3, '¿Para qué sirven las vistas frontal, superior y lateral?', 'Mostrar el objeto sin ambigüedades', ['Hacer el dibujo más bonito', 'Ahorrar papel', 'Reemplazar las medidas']],
-    [3, '¿Cómo deben escribirse las instrucciones de un manual?', 'Pasos numerados con verbos en imperativo', ['Un solo párrafo largo', 'Con lenguaje poético', 'Sin ningún orden']],
-    [4, '¿Por qué muchos instructivos usan solo imágenes?', 'Se entienden en cualquier idioma', ['Porque es más caro escribir', 'Porque las palabras confunden siempre', 'Porque así lo exige la ley']],
-    [4, '¿Qué diferencia hay entre croquis y dibujo técnico?', 'El dibujo técnico es a escala y con normas', ['El croquis siempre es a escala', 'No hay ninguna diferencia', 'El croquis lleva más colores']],
-    [5, 'En un diagrama para preparar agua de jamaica, “¿Está dulce?” debe ir en:', 'Un rombo con salidas sí y no', ['Un rectángulo sin salidas', 'Un círculo de inicio', 'Una flecha sin figura']],
-    [5, '¿Qué debe incluir un manual de un aparato eléctrico además de los pasos?', 'Advertencias de seguridad', ['El precio del aparato', 'La biografía del inventor', 'Publicidad de otros productos']]
-  ] });
-
-bankTopic({ id: 'te_estrategico', eje: 'tdis', m: 7, title: 'Pensamiento estratégico y planeación de proyectos',
-  nem: 'Pensamiento estratégico en la planeación de proyectos técnicos: diagnóstico, alternativas, recursos, cronograma y gestión de riesgos.',
-  formula: 'Etapas: identificar el problema → investigar → generar alternativas → evaluar y elegir → planear (actividades, recursos, responsables, cronograma) → ejecutar → evaluar. Cronograma o diagrama de Gantt: actividades en el tiempo. Análisis FODA: fortalezas, oportunidades, debilidades, amenazas.',
-  lesson: lesson({ k: 'Pensar estratégicamente es anticiparse: definir a dónde quieres llegar, qué recursos tienes, qué puede salir mal y cómo vas a organizarte para lograrlo.',
-    p: ['<b>Alternativas:</b> antes de decidir, propone varias soluciones y compáralas con criterios (costo, tiempo, impacto).', '<b>Cronograma (Gantt):</b> barras que muestran cuándo empieza y termina cada actividad.', '<b>FODA:</b> fortalezas y debilidades son internas; oportunidades y amenazas, externas.', '<b>Riesgos:</b> identifica qué podría fallar y prepara un plan B.'],
-    ex: 'Para un huerto escolar: fortaleza = alumnos motivados; debilidad = poca experiencia; oportunidad = un vivero cercano dona plantas; amenaza = lluvias fuertes.',
-    er: ['Escoger la primera idea sin comparar alternativas.', 'No prever riesgos y abandonar el proyecto al primer problema.'],
-    v: 'Para organizar proyectos escolares, personales y comunitarios con éxito.' }),
-  qs: [
-    [1, '¿Qué herramienta muestra las actividades de un proyecto en el tiempo?', 'El cronograma o diagrama de Gantt', ['El diagrama de flujo', 'El croquis', 'El boceto']],
-    [1, 'En un FODA, la “A” significa:', 'Amenazas', ['Alternativas', 'Actividades', 'Acuerdos']],
-    [2, 'En el FODA, ¿qué elementos son internos?', 'Fortalezas y debilidades', ['Oportunidades y amenazas', 'Amenazas y fortalezas', 'Oportunidades y debilidades']],
-    [2, '¿Qué etapa va antes de planear?', 'Evaluar y elegir una alternativa', ['Evaluar los resultados finales', 'Ejecutar el proyecto', 'Celebrar el éxito']],
-    [3, '¿Por qué conviene generar varias alternativas?', 'Para elegir la mejor con criterios', ['Para gastar más tiempo', 'Para no decidir nunca', 'Porque la primera siempre es mala']],
-    [3, 'Unas lluvias fuertes que pueden dañar un huerto son, en el FODA, una:', 'Amenaza', ['Fortaleza', 'Debilidad', 'Oportunidad']],
-    [4, '¿Qué es un plan B?', 'Una acción prevista por si algo falla', ['El segundo proyecto del año', 'Una copia del plan original', 'El presupuesto del proyecto']],
-    [4, 'Un vivero cercano que dona plantas es, en el FODA, una:', 'Oportunidad', ['Amenaza', 'Debilidad', 'Fortaleza']],
-    [5, '¿Qué caracteriza al pensamiento estratégico?', 'Anticiparse y organizar recursos para una meta', ['Actuar sin planear para ganar tiempo', 'Reaccionar solo cuando hay problemas', 'Copiar lo que hacen los demás']],
-    [5, 'Un proyecto se retrasa porque nadie sabía quién compraba los materiales. ¿Qué faltó?', 'Asignar responsables en la planeación', ['Más dinero para materiales', 'Un mejor diagrama de flujo', 'Hacer el proyecto más largo']]
-  ] });
-
-bankTopic({ id: 'te_evaluacion', eje: 'tdis', m: 9, title: 'Evaluación de sistemas tecnológicos',
-  nem: 'Evaluación de sistemas tecnológicos según su eficiencia, eficacia, fiabilidad y factibilidad, considerando sus efectos sociales y ambientales.',
-  formula: 'Eficacia: logra el objetivo. Eficiencia: lo logra con el menor uso de recursos (energía útil ÷ energía consumida). Fiabilidad: funciona bien de forma constante, sin fallas. Factibilidad: se puede realizar con los recursos disponibles (técnica, económica, social, ambiental).',
-  lesson: lesson({ k: 'Evaluar un sistema tecnológico es preguntarse si cumple su propósito, cuánto le cuesta hacerlo, qué tan confiable es y si vale la pena para la sociedad y la naturaleza.',
-    p: ['<b>Eficacia:</b> ¿hace lo que debe? Un ventilador eficaz refresca el cuarto.', '<b>Eficiencia:</b> ¿cuánto recurso gasta para lograrlo? Un foco LED da la misma luz que uno incandescente con mucha menos energía.', '<b>Fiabilidad:</b> ¿falla poco? Se mide, por ejemplo, con el tiempo promedio entre fallas.', '<b>Factibilidad:</b> ¿es posible hacerlo con lo que tenemos? Técnica, económica, social y ambientalmente.', 'Un sistema puede ser eficaz pero ineficiente (logra el objetivo gastando mucho).'],
-    ex: 'Un foco incandescente convierte solo cerca del 5% de la energía en luz; un LED, mucho más. Ambos son eficaces, pero el LED es más eficiente.',
-    er: ['Confundir eficacia (lograrlo) con eficiencia (lograrlo con pocos recursos).', 'Evaluar solo por el precio de compra sin considerar el consumo.'],
-    v: 'Para elegir aparatos y soluciones que ahorren energía, dinero y recursos.' }),
-  qs: [
-    [1, 'Un sistema que logra su objetivo es:', 'Eficaz', ['Factible', 'Fiable', 'Barato']],
-    [1, 'Un sistema que funciona sin fallas de forma constante es:', 'Fiable', ['Eficaz', 'Ineficiente', 'Infactible']],
-    [2, 'Un foco LED que ilumina igual gastando menos energía es más:', 'Eficiente', ['Eficaz', 'Fiable', 'Barato de comprar']],
-    [2, 'Un proyecto que se puede realizar con los recursos disponibles es:', 'Factible', ['Eficiente', 'Fiable', 'Eficaz']],
-    [3, '¿Puede un sistema ser eficaz pero ineficiente?', 'Sí: logra el objetivo gastando muchos recursos', ['No: eficaz y eficiente son lo mismo', 'Solo si es muy barato', 'Solo si falla mucho']],
-    [3, 'Si un motor recibe 100 J y entrega 25 J útiles, su eficiencia es:', '25%', ['75%', '125%', '4%']],
-    [4, '¿Por qué evaluar solo el precio de compra puede ser un error?', 'El consumo de energía también cuesta', ['Porque lo barato siempre es mejor', 'Porque el precio no existe', 'Porque los aparatos no consumen']],
-    [4, 'Una bomba de agua se descompone cada semana. Le falta:', 'Fiabilidad', ['Eficacia en su diseño', 'Factibilidad económica', 'Un mejor color']],
-    [5, 'Un sistema muy eficiente contamina un río. ¿Qué criterio falla?', 'La factibilidad ambiental', ['La eficiencia energética', 'La eficacia técnica', 'Ninguno, está bien']],
-    [5, '¿Qué conviene comparar al elegir entre dos refrigeradores?', 'Consumo, durabilidad, costo y efecto ambiental', ['Solo el color y la marca', 'Solo el precio de compra', 'Solo el tamaño de la puerta']]
-  ] });
-
 /* ===== INGLÉS 3.° (Campo formativo Lenguajes) =====
    Contenidos del Programa Sintético de la Fase 6 (3.er grado, Inglés) y del libro Projects and Readings, Third Grade; gramática y vocabulario de nivel A2-B1. */
 registerSubject({ id: 'ingles', short: 'Inglés', name: 'Inglés', icon: '💬', color: '#DB2777', campo: 'Lenguajes',
@@ -2966,7 +2851,7 @@ TOPICS.forEach(t => {
 });
 
 /* ===== Aplicación: estado, motor adaptativo e interfaz ===== */
-const VERSION = '1.0 · 15 de noviembre de 2026';
+const VERSION = "1.1 · 15 de noviembre de 2026";
 const LVL = ['Inicial', 'Básico', 'Intermedio', 'Avanzado', 'Experto'];
 TOPICS.forEach(t => { t.subj = EJES[t.eje].subj; });
 const TOP = Object.fromEntries(TOPICS.map(t => [t.id, t]));
@@ -3599,7 +3484,6 @@ const PARENT_TIPS = {
   quimica: 'Hagan juntos los experimentos caseros con materiales de cocina (vinagre, bicarbonato, col morada como indicador) y pídele que explique qué cambió y qué se conservó.',
   fce: 'Conversen sobre situaciones reales (noticias, conflictos en la escuela) y cómo se resolverían con respeto y apego a los derechos.',
   artes: 'Visiten museos (también virtuales), escuchen música variada y valoren sus creaciones preguntándole qué quiso expresar.',
-  tecnologia: 'Involúcralo en reparar o mejorar algo de la casa siguiendo pasos: identificar el problema, planear, hacer y evaluar.',
   ingles: 'Canciones, series o videos cortos con subtítulos en inglés, y pedirle que te enseñe 3 palabras nuevas por semana.'
 };
 
