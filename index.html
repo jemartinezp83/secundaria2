@@ -4485,7 +4485,7 @@ TOPICS.forEach(t => {
 });
 
 /* ===== Aplicación: estado, motor adaptativo e interfaz ===== */
-const VERSION = '2.4 · 15 de noviembre de 2026';
+const VERSION = '2.5 · 16 de noviembre de 2026';
 const LVL = ['Inicial', 'Básico', 'Intermedio', 'Avanzado', 'Experto'];
 TOPICS.forEach(t => { t.subj = EJES[t.eje].subj; });
 const TOP = Object.fromEntries(TOPICS.map(t => [t.id, t]));
@@ -4518,7 +4518,8 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const mins = s => s < 3600 ? Math.round(s / 60) + ' min' : (s / 3600).toFixed(1) + ' h';
 
 /* ---- Motor adaptativo ---- */
-function applyResult(id, ok, o = {}) {
+function applyResult(id, ok, o = {}) { const ev = applyResult0(id, ok, o); if (typeof dayLog === 'function') { dayLog(id, ok, ev); save(); } return ev; }
+function applyResult0(id, ok, o = {}) {
   const t = tp(id), p = prof(), d = day(), ev = [];
   t.att++; t.last = Date.now(); d.q++; if (ok) { t.ok++; d.ok++; }
   if (o.hinted) t.hint++;
@@ -5317,6 +5318,145 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target &&
 /* ---- Inicio ---- */
 load(); Object.values(DB.profiles).forEach(fixProfile); if (DB.current && !DB.profiles[DB.current]) DB.current = null;
 render();
+
+/* ===== Reporte de avance por correo (opcional, lo activa el padre o tutor) =====
+   Funciona en cualquier equipo con navegador (iPad, iPhone, Android, PC con Windows o Mac) y sin instalar nada más.
+   La app envía el avance a un Apps Script que el padre o tutor instala en SU cuenta de Google; el script guarda los datos
+   en una hoja de cálculo y manda el correo con la frecuencia y a la hora que se configuren aquí.
+   Envíos: al abrir la app, al terminar una sesión, al cerrar o cambiar de app y cada 10 min de uso; sin internet se reintenta después. */
+const MAIL_DEFAULT_URL = '';            // dirección /exec del Apps Script; si se fija aquí, en cada equipo solo hay que activar el reporte
+const MAIL_TOKEN = 'avance-secundaria-2026';
+const DOW = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+function guessDevice() {
+  const u = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  if (/iPad/.test(u) || (/Macintosh/.test(u) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1)) return 'iPad';
+  if (/iPhone/.test(u)) return 'iPhone'; if (/Android/.test(u)) return /Mobile/.test(u) ? 'Celular Android' : 'Tableta Android';
+  if (/Windows/.test(u)) return 'PC Windows'; if (/Macintosh/.test(u)) return 'Mac'; return 'Navegador';
+}
+function mailCfg() {
+  const c = DB.mail = DB.mail || {};
+  if (c.on === undefined) Object.assign(c, { on: false, url: '', freq: 'diario', days: [1, 2, 3, 4, 5], wday: 0, hour: 21, empty: true, at: 0, ok: 0, err: '' });
+  if (!c.dev) c.dev = Math.random().toString(36).slice(2, 10);
+  if (!c.devName) c.devName = guessDevice();
+  return c;
+}
+const mailURL = () => (mailCfg().url || MAIL_DEFAULT_URL || '').trim();
+const schedDays = c => c.freq === 'diario' ? [0, 1, 2, 3, 4, 5, 6] : c.freq === 'habiles' ? [1, 2, 3, 4, 5] : c.freq === 'semanal' ? [c.wday] : (c.days || []);
+function nextSendText(c) {
+  const ds = schedDays(c); if (!c.on || !ds.length) return 'sin envíos programados';
+  const now = new Date();
+  for (let i = 0; i < 8; i++) { const d = new Date(now); d.setDate(d.getDate() + i); if (!ds.includes(d.getDay())) continue; if (i === 0 && now.getHours() >= c.hour + 1) continue;
+    return `${i === 0 ? 'hoy' : i === 1 ? 'mañana' : 'el ' + DOW[d.getDay()]} entre las ${c.hour}:00 y las ${c.hour + 1}:00 h`; }
+  return 'sin envíos programados';
+}
+const freqText = c => c.freq === 'diario' ? 'todos los días' : c.freq === 'habiles' ? 'de lunes a viernes' : c.freq === 'semanal' ? `cada ${DOW[c.wday]} (resumen de la semana)` : (c.days || []).length ? 'los ' + (c.days || []).slice().sort().map(d => DOW[d]).join(', ') : 'ningún día';
+
+/* Registro del día por tema y eventos (lo llama applyResult) */
+function dayLog(id, ok, ev) {
+  const d = day(); d.t = d.t || {}; const x = d.t[id] || (d.t[id] = [0, 0]); x[0]++; if (ok) x[1]++;
+  if (ev && ev.length) { d.ev = d.ev || []; ev.forEach(e => d.ev.push([id, e, tp(id).lvl])); }
+}
+function mailPayloadFor(name) {
+  const p = DB.profiles[name], keep = DB.current; DB.current = name; const out = { alumno: p.name, goal: p.goal || 25, days: {} };
+  try {
+    out.streak = streakDays(); out.totalQ = Object.values(p.topics).reduce((a, t) => a + (t.att || 0), 0);
+    out.grades = activeSubjects().map(s => { const G = subjGrade(s.id); return [s.name, G && G.g !== null ? G.g : null, G ? Math.round((G.cov || 0) * 100) : 0]; });
+    out.prio = []; activeSubjects().forEach(s => { const G = subjGrade(s.id); if (G && G.weak) G.weak.slice(0, 2).forEach(t => out.prio.push(`${s.short}: ${t.title}`)); });
+    out.prio = out.prio.slice(0, 8);
+    const now = new Date();
+    for (let k0 = 0; k0 < 9; k0++) {
+      const dt = new Date(now); dt.setDate(dt.getDate() - k0); const k = dkey(dt), v = p.days[k]; if (!v || !(v.q || v.sec)) continue;
+      const subj = {}, topics = [];
+      for (const [id, [q, ok]] of Object.entries(v.t || {})) { const T = TOP[id]; if (!T) continue; const sn = SUBJECTS[T.subj].short; const s = subj[sn] || (subj[sn] = [0, 0]); s[0] += q; s[1] += ok; topics.push([T.title, sn, q, ok, (peek(id) || {}).lvl || 1]); }
+      topics.sort((a, b) => b[2] - a[2]);
+      const ev = (v.ev || []).filter(e => e[1] !== 'down').map(([id, e, l]) => [TOP[id] ? TOP[id].title : id, e, l]);
+      const sims = (p.exams || []).filter(x => x.bim && dkey(new Date(x.d)) === k).map(x => [SUBJECTS[x.bim] ? SUBJECTS[x.bim].name : x.bim, x.g, x.ok, x.n]);
+      out.days[k] = { q: v.q || 0, ok: v.ok || 0, min: Math.round((v.sec || 0) / 60), subj, topics: topics.slice(0, 15), ev: ev.slice(-12), sims };
+    }
+  } finally { DB.current = keep; }
+  return out;
+}
+function mailPayload(action) {
+  const c = mailCfg();
+  return { token: MAIL_TOKEN, action: action || 'sync', app: APP_KEY, appName: APP_NAME, version: VERSION, sent: new Date().toISOString(),
+    device: { id: c.dev, name: c.devName },
+    cfg: { on: !!c.on, freq: c.freq, days: schedDays(c), hour: c.hour, empty: !!c.empty, at: c.at || 0 },
+    alumnos: c.on ? Object.keys(DB.profiles).map(mailPayloadFor) : [] };
+}
+let MAIL_SIG = '', MAIL_BUSY = false;
+async function postJSON(url, body) {
+  try { const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body, redirect: 'follow' }); const t = await r.text(); let j = {}; try { j = JSON.parse(t); } catch (e) { } return j.ok ? { ok: true, j } : { ok: false, err: j.error || 'respuesta inesperada del servicio' }; }
+  catch (e) { // algunos navegadores (o la app abierta como archivo) no permiten leer la respuesta: se envía sin confirmación
+    try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body }); return { ok: true, unconfirmed: true }; }
+    catch (e2) { return { ok: false, err: 'sin conexión a internet' }; } }
+}
+async function mailSend(force, action) {
+  const url = mailURL(), c = mailCfg(); if (!url) return { ok: false, err: 'falta la dirección del servicio' };
+  if (MAIL_BUSY || !Object.keys(DB.profiles).length) return { ok: false, err: 'no hay alumnos registrados' };
+  if (!c.on && !force) return { ok: false };
+  if (!force && typeof navigator !== 'undefined' && navigator.onLine === false) return { ok: false };
+  const body = JSON.stringify(mailPayload(action)), sig = body.replace(/"sent":"[^"]*"/, '');
+  if (!force && sig === MAIL_SIG && Date.now() - (c.ok || 0) < 30 * 60000) return { ok: true };
+  MAIL_BUSY = true;
+  try { const r = await postJSON(url, body); if (r.ok) { c.ok = Date.now(); c.err = ''; c.unconfirmed = !!r.unconfirmed; MAIL_SIG = sig; } else c.err = r.err; save(); return r; }
+  finally { MAIL_BUSY = false; }
+}
+function mailBeacon() { const url = mailURL(), c = mailCfg(); if (!url || !c.on || typeof navigator === 'undefined' || !navigator.sendBeacon || !Object.keys(DB.profiles).length) return; try { navigator.sendBeacon(url, new Blob([JSON.stringify(mailPayload())], { type: 'text/plain;charset=utf-8' })); } catch (e) { } }
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  setTimeout(() => mailSend(), 5000);
+  setInterval(() => mailSend(), 10 * 60000);
+  window.addEventListener('online', () => mailSend());
+  window.addEventListener('hashchange', () => setTimeout(() => mailSend(), 1500));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') mailBeacon(); else mailSend(); });
+}
+
+/* ---- Configuración en la sección de padres ---- */
+function mailCard() {
+  const c = mailCfg(), fx = t => t ? new Date(t).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'todavía no';
+  const rb = (v, l) => `<label class="chk"><input type="radio" name="mfreq" value="${v}" ${c.freq === v ? 'checked' : ''}> ${l}</label>`;
+  const dsel = [1, 2, 3, 4, 5, 6, 0].map(d => `<label class="small" style="margin-right:10px"><input type="checkbox" data-mday="${d}" ${(c.days || []).includes(d) ? 'checked' : ''}> ${DOW[d].slice(0, 3)}</label>`).join('');
+  const hours = Array.from({ length: 18 }, (_, i) => i + 6).map(h => `<option value="${h}" ${c.hour === h ? 'selected' : ''}>${h}:00 h</option>`).join('');
+  return `<div class="card"><h2>📧 Reporte de avance por correo</h2>
+<p>Si lo activas, recibirás en tu correo un resumen de lo que practicó cada alumno: tiempo, preguntas, aciertos por materia, temas en los que subió de nivel, simulacros y calificación estimada. Funciona en iPad, iPhone, celular Android o PC: actívalo en <b>cada equipo</b> donde el alumno estudie y el correo sumará lo de todos. El equipo solo necesita internet de vez en cuando (al abrir la app, al terminar o al cerrarla).</p>
+<label class="chk" style="font-size:1.05rem"><input type="checkbox" id="mailon" ${c.on ? 'checked' : ''}> <b>Quiero recibir el reporte por correo</b></label>
+<div class="grid g2" style="margin-top:10px">
+<div><h4>¿Cada cuándo?</h4>${rb('diario', 'Todos los días')}${rb('habiles', 'De lunes a viernes')}${rb('dias', 'Solo estos días:')}<div style="margin:4px 0 8px 28px">${dsel}</div>${rb('semanal', 'Una vez por semana (resumen de 7 días), el')}<div style="margin:4px 0 8px 28px"><select id="mwday" class="inp">${[1, 2, 3, 4, 5, 6, 0].map(d => `<option value="${d}" ${c.wday === d ? 'selected' : ''}>${DOW[d]}</option>`).join('')}</select></div></div>
+<div><h4>¿A qué hora?</h4><select id="mhour" class="inp">${hours}</select><p class="small mut">El correo llega dentro de esa hora (por ejemplo, entre 21:00 y 22:00).</p>
+<label class="chk"><input type="checkbox" id="mempty" ${c.empty ? 'checked' : ''}> Avisarme también cuando no haya practicado</label>
+<h4>Nombre de este equipo</h4><input id="mdev" class="inp" style="width:100%" value="${esc(c.devName)}" maxlength="30"><p class="small mut">Aparece en el correo para saber desde dónde estudió.</p></div></div>
+<h4>Dirección del servicio</h4><input id="mailurl" class="inp" style="width:100%" value="${esc(mailURL())}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" spellcheck="false">
+<p class="small mut">Se obtiene una sola vez al instalar el servicio en tu cuenta de Google (ver el instructivo “Reporte por correo”). Es la misma dirección en todos los equipos.</p>
+<div class="acts"><button class="btn pri" data-act="mailsave">Guardar configuración</button><button class="btn" data-act="mailtest">Enviar un correo de prueba ahora</button></div>
+<p class="small">Estado: <b>${c.on ? `activado · ${freqText(c)} · próximo correo ${nextSendText(c)}` : 'desactivado'}</b><br><span class="mut">Última sincronización de este equipo: ${fx(c.ok)}${c.err ? ` · último intento con problema: ${esc(c.err)}` : ''}${c.unconfirmed && !c.err ? ' (el navegador no permitió confirmar la respuesta)' : ''}</span></p></div>`;
+}
+function readMailForm() {
+  const c = mailCfg(), f = ($('input[name=mfreq]:checked') || {}).value || c.freq;
+  const u = (($('#mailurl') || {}).value || '').trim();
+  if (u && !/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)) { toast('La dirección debe empezar con https://script.google.com/ y terminar en /exec.', 4000); return null; }
+  const days = [...document.querySelectorAll('[data-mday]')].filter(x => x.checked).map(x => +x.dataset.mday);
+  const on = !!($('#mailon') || {}).checked;
+  if (on && !u && !MAIL_DEFAULT_URL) { toast('Para activar el reporte, captura la dirección del servicio.', 4000); return null; }
+  if (on && f === 'dias' && !days.length) { toast('Elige al menos un día.', 3000); return null; }
+  Object.assign(c, { on, url: u, freq: f, days, wday: +(($('#mwday') || {}).value || 0), hour: +(($('#mhour') || {}).value || 21), empty: !!($('#mempty') || {}).checked, devName: ((($('#mdev') || {}).value || '').trim() || guessDevice()).slice(0, 30), at: Date.now() });
+  save(); return c;
+}
+Object.assign(ACT, {
+  mailsave: async () => {
+    if (!parentOpen()) return toast('Solo desde la sección de padres.');
+    const c = readMailForm(); if (!c) return;
+    if (!mailURL()) { render(); return toast('Configuración guardada.'); }
+    toast('Guardando y sincronizando…'); const r = await mailSend(true); render();
+    toast(r.ok ? (c.on ? `✅ Listo. Próximo correo: ${nextSendText(c)}.` : '✅ Reporte por correo desactivado.') : `⚠️ Se guardó en este equipo, pero no se pudo avisar al servicio (${r.err}). Se reintentará solo.`, 5000);
+  },
+  mailtest: async () => {
+    if (!parentOpen()) return toast('Solo desde la sección de padres.');
+    const c = readMailForm(); if (!c) return; if (!mailURL()) return toast('Primero captura la dirección del servicio.');
+    if (!c.on) return toast('Activa primero la casilla “Quiero recibir el reporte por correo”.', 3500);
+    toast('Enviando correo de prueba…'); const r = await mailSend(true, 'test'); render();
+    toast(r.ok ? (r.unconfirmed ? '📨 Solicitud enviada. Revisa tu correo en un minuto.' : '📨 Correo de prueba enviado. Revisa tu bandeja (y la de spam).') : `⚠️ No se pudo: ${r.err}.`, 5000);
+  }
+});
+{ const _pc = parentConfig; parentConfig = function () { return _pc() + mailCard(); }; }
 
 </script><script>
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
