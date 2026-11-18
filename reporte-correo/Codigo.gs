@@ -230,5 +230,5 @@ function frecTxt_(c) { const d = c.days || []; if (d.length === 7) return 'todos
 function ahora_() { const d = new Date(); return { date: d, fecha: Utilities.formatDate(d, CONFIG.ZONA, 'yyyy-MM-dd'), hour: Number(Utilities.formatDate(d, CONFIG.ZONA, 'H')), dow: Number(Utilities.formatDate(d, CONFIG.ZONA, 'u')) % 7, txt: Utilities.formatDate(d, CONFIG.ZONA, 'dd/MM/yyyy HH:mm') }; }
 const hoy_ = () => ahora_().fecha;
 function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
-/* Para probar desde el editor: envía ahora el reporte de la app de 3.° (o cambia a 'sec2'). */
-function probarCorreo() { enviarReporte_('sec3', true); }
+/* Para probar desde el editor: envía ahora un correo de prueba de cada app (2.° y 3.°). */
+function probarCorreo() { enviarReporte_('sec2', true); enviarReporte_('sec3', true); }
