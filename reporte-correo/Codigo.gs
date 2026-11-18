@@ -1,6 +1,6 @@
 /**
  * Reporte de avance por correo — Apps Script para las apps Secundaria 2.° y 3.°
- * Versión 1.0 · 16 de noviembre de 2026
+ * Versión 1.1 · 17 de noviembre de 2026 (crea solo el activador automático; revisión cada 15 min; función diagnostico)
  *
  * Qué hace:
  *  1) Recibe el avance que envían las apps (iPad, iPhone, Android o PC) y lo guarda en la hoja "Avance secundaria – registro".
@@ -21,10 +21,37 @@ const PROPS = () => PropertiesService.getScriptProperties();
 /* ---------- Instalación ---------- */
 function instalar() {
   const ss = libro_();
-  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'revisarEnvios').forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('revisarEnvios').timeBased().everyHours(1).create();
+  asegurarDisparador_(true);
   Logger.log('Listo. Hoja de registro: ' + ss.getUrl());
-  Logger.log('Ahora: Implementar > Nueva implementación > Aplicación web (Ejecutar como: yo; Quién tiene acceso: cualquier persona) y copia la URL que termina en /exec.');
+  Logger.log('Revisión automática activa (cada 15 minutos). Si aún no lo has hecho: Implementar > Nueva implementación > Aplicación web (Ejecutar como: yo; Quién tiene acceso: cualquier persona) y copia la URL que termina en /exec.');
+}
+/* Crea (o repara) el activador que revisa cada 15 minutos si toca enviar el correo. Devuelve true si quedó activo. */
+function asegurarDisparador_(rehacer) {
+  try {
+    const ts = ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'revisarEnvios');
+    if (ts.length === 1 && !rehacer) return true;
+    ts.forEach(t => ScriptApp.deleteTrigger(t));
+    ScriptApp.newTrigger('revisarEnvios').timeBased().everyMinutes(15).create();
+    return true;
+  } catch (e) { PROPS().setProperty('err_disparador', String(e).slice(0, 200)); return false; }
+}
+/* Ejecútala desde el editor para ver en el registro por qué no llega un correo. */
+function diagnostico() {
+  const t = ahora_(), ts = ScriptApp.getProjectTriggers().map(x => x.getHandlerFunction() + ' (' + x.getEventType() + ')');
+  Logger.log('Hora de México: ' + t.txt + ' · día: ' + DOW[t.dow]);
+  Logger.log('Activadores: ' + (ts.join(', ') || 'NINGUNO → ejecuta la función "instalar"'));
+  Logger.log('Última revisión automática: ' + (PROPS().getProperty('ultima_revision') || 'nunca'));
+  ['sec2', 'sec3'].forEach(app => {
+    const c = JSON.parse(PROPS().getProperty('cfg_' + app) || 'null');
+    if (!c) return Logger.log(app + ': sin configuración recibida de la app.');
+    Logger.log(app + ': ' + (c.on ? 'ACTIVADO' : 'DESACTIVADO en la app') + ' · días: ' + c.days.map(d => DOW[d]).join(', ') + ' · hora: ' + c.hour + ':00 · avisar sin práctica: ' + (c.empty ? 'sí' : 'no') + ' · último correo programado: ' + (PROPS().getProperty('sent_' + app) || 'ninguno'));
+  });
+  Logger.log('Último error: ' + (PROPS().getProperty('err_envio') || PROPS().getProperty('err_disparador') || 'ninguno'));
+}
+function estado_(app) {
+  const c = JSON.parse(PROPS().getProperty('cfg_' + app) || 'null') || {};
+  let disp = false; try { disp = ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'revisarEnvios'); } catch (e) { }
+  return { disparador: disp, ultimaRevision: PROPS().getProperty('ultima_revision') || '', ultimoCorreo: PROPS().getProperty('sent_' + app) || '', activado: !!c.on, error: PROPS().getProperty('err_envio') || '' };
 }
 function libro_() {
   const id = PROPS().getProperty('ss');
@@ -49,6 +76,7 @@ function doPost(e) {
   try {
     guardarConfig_(data);
     guardarDatos_(data);
+    if (data.cfg && data.cfg.on) asegurarDisparador_(false);
     let msg = 'sincronizado';
     if (data.action === 'test') {
       const n = Number(PROPS().getProperty('test_' + hoy_()) || 0);
@@ -56,7 +84,7 @@ function doPost(e) {
       PROPS().setProperty('test_' + hoy_(), String(n + 1));
       enviarReporte_(data.app, true); msg = 'correo de prueba enviado';
     }
-    return json_({ ok: true, msg });
+    return json_({ ok: true, msg, estado: estado_(data.app) });
   } finally { lock.releaseLock(); }
 }
 function guardarConfig_(data) {
@@ -90,13 +118,20 @@ function guardarDatos_(data) {
 /* ---------- Envío programado (disparador cada hora) ---------- */
 function revisarEnvios() {
   const t = ahora_();
+  PROPS().setProperty('ultima_revision', t.txt);
   ['sec2', 'sec3'].forEach(app => {
-    const c = JSON.parse(PROPS().getProperty('cfg_' + app) || 'null');
-    if (!c || !c.on || !c.days.includes(t.dow) || t.hour < c.hour) return;
-    if (PROPS().getProperty('sent_' + app) === t.fecha) return;     // ya se envió hoy
-    if (t.hour > c.hour + 3) return;                                // no enviar muy tarde si el disparador se atrasó demasiado
-    enviarReporte_(app, false);
-    PROPS().setProperty('sent_' + app, t.fecha);
+    try {
+      const c = JSON.parse(PROPS().getProperty('cfg_' + app) || 'null');
+      if (!c || !c.on || !c.days.map(Number).includes(t.dow) || t.hour < Number(c.hour)) return;
+      if (PROPS().getProperty('sent_' + app) === t.fecha) return;     // ya se envió hoy
+      if (t.hour > Number(c.hour) + 3) return;                        // no enviar muy tarde si el activador se atrasó demasiado
+      enviarReporte_(app, false);
+      PROPS().setProperty('sent_' + app, t.fecha);
+      PROPS().deleteProperty('err_envio');
+    } catch (e) {
+      PROPS().setProperty('err_envio', t.txt + ' · ' + String(e).slice(0, 180));
+      try { libro_().getSheetByName('Envios').appendRow([new Date(), app, 'ERROR', '', 0, String(e).slice(0, 200)]); } catch (e2) { }
+    }
   });
 }
 /* Periodo que cubre el correo: desde el día siguiente al envío programado anterior hasta hoy (máximo 7 días). */
@@ -157,7 +192,7 @@ function html_(c, t, fechas, bloques, prueba) {
   const css = 'font-family:Arial,Helvetica,sans-serif;color:#0F172A;font-size:14px;line-height:1.45';
   let h = `<div style="${css};max-width:680px;margin:auto;background:${COL.fondo};padding:16px">`;
   h += `<h2 style="margin:0 0 4px">${esc_(c.appName)} · reporte de avance</h2><div style="color:${COL.gris};font-size:13px">${fechas.length > 1 ? 'Periodo: ' + fechaTxt_(fechas[0]) + ' al ' + fechaTxt_(fechas[fechas.length - 1]) : fechaTxt_(t.fecha)} · generado ${t.txt}</div>`;
-  if (prueba) h += `<p style="background:#EFF6FF;border:1px solid #BFDBFE;padding:8px;border-radius:6px">Este es un <b>correo de prueba</b>. Los correos programados llegarán ${esc_(frecTxt_(c))}, entre las ${c.hour}:00 y las ${c.hour + 1}:00 h.</p>`;
+  if (prueba) h += `<p style="background:#EFF6FF;border:1px solid #BFDBFE;padding:8px;border-radius:6px">Este es un <b>correo de prueba</b>. Los correos programados llegarán ${esc_(frecTxt_(c))}, a las ${c.hour}:00 h (o unos minutos después).</p>`;
   if (!bloques.length) h += `<p>Todavía no hay datos de ningún alumno. Activa el reporte en la sección de padres de la app en cada equipo donde estudie.</p>`;
   bloques.forEach(b => {
     const tot = b.periodo.reduce((a, [, d]) => ({ q: a.q + d.q, ok: a.ok + d.ok, min: a.min + d.min }), { q: 0, ok: 0, min: 0 });

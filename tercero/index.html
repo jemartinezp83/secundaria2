@@ -2851,7 +2851,7 @@ TOPICS.forEach(t => {
 });
 
 /* ===== Aplicación: estado, motor adaptativo e interfaz ===== */
-const VERSION = "1.2 · 16 de noviembre de 2026";
+const VERSION = "1.3 · 17 de noviembre de 2026";
 const LVL = ['Inicial', 'Básico', 'Intermedio', 'Avanzado', 'Experto'];
 TOPICS.forEach(t => { t.subj = EJES[t.eje].subj; });
 const TOP = Object.fromEntries(TOPICS.map(t => [t.id, t]));
@@ -3711,7 +3711,7 @@ function nextSendText(c) {
   const ds = schedDays(c); if (!c.on || !ds.length) return 'sin envíos programados';
   const now = new Date();
   for (let i = 0; i < 8; i++) { const d = new Date(now); d.setDate(d.getDate() + i); if (!ds.includes(d.getDay())) continue; if (i === 0 && now.getHours() >= c.hour + 1) continue;
-    return `${i === 0 ? 'hoy' : i === 1 ? 'mañana' : 'el ' + DOW[d.getDay()]} entre las ${c.hour}:00 y las ${c.hour + 1}:00 h`; }
+    return `${i === 0 ? 'hoy' : i === 1 ? 'mañana' : 'el ' + DOW[d.getDay()]} a las ${c.hour}:00 h (aprox.)`; }
   return 'sin envíos programados';
 }
 const freqText = c => c.freq === 'diario' ? 'todos los días' : c.freq === 'habiles' ? 'de lunes a viernes' : c.freq === 'semanal' ? `cada ${DOW[c.wday]} (resumen de la semana)` : (c.days || []).length ? 'los ' + (c.days || []).slice().sort().map(d => DOW[d]).join(', ') : 'ningún día';
@@ -3763,7 +3763,7 @@ async function mailSend(force, action) {
   const body = JSON.stringify(mailPayload(action)), sig = body.replace(/"sent":"[^"]*"/, '');
   if (!force && sig === MAIL_SIG && Date.now() - (c.ok || 0) < 30 * 60000) return { ok: true };
   MAIL_BUSY = true;
-  try { const r = await postJSON(url, body); if (r.ok) { c.ok = Date.now(); c.err = ''; c.unconfirmed = !!r.unconfirmed; MAIL_SIG = sig; } else c.err = r.err; save(); return r; }
+  try { const r = await postJSON(url, body); if (r.ok) { c.ok = Date.now(); c.err = ''; c.unconfirmed = !!r.unconfirmed; MAIL_SIG = sig; if (r.j && r.j.estado) c.srv = r.j.estado; } else c.err = r.err; save(); return r; }
   finally { MAIL_BUSY = false; }
 }
 function mailBeacon() { const url = mailURL(), c = mailCfg(); if (!url || !c.on || typeof navigator === 'undefined' || !navigator.sendBeacon || !Object.keys(DB.profiles).length) return; try { navigator.sendBeacon(url, new Blob([JSON.stringify(mailPayload())], { type: 'text/plain;charset=utf-8' })); } catch (e) { } }
@@ -3786,13 +3786,13 @@ function mailCard() {
 <label class="chk" style="font-size:1.05rem"><input type="checkbox" id="mailon" ${c.on ? 'checked' : ''}> <b>Quiero recibir el reporte por correo</b></label>
 <div class="grid g2" style="margin-top:10px">
 <div><h4>¿Cada cuándo?</h4>${rb('diario', 'Todos los días')}${rb('habiles', 'De lunes a viernes')}${rb('dias', 'Solo estos días:')}<div style="margin:4px 0 8px 28px">${dsel}</div>${rb('semanal', 'Una vez por semana (resumen de 7 días), el')}<div style="margin:4px 0 8px 28px"><select id="mwday" class="inp">${[1, 2, 3, 4, 5, 6, 0].map(d => `<option value="${d}" ${c.wday === d ? 'selected' : ''}>${DOW[d]}</option>`).join('')}</select></div></div>
-<div><h4>¿A qué hora?</h4><select id="mhour" class="inp">${hours}</select><p class="small mut">El correo llega dentro de esa hora (por ejemplo, entre 21:00 y 22:00).</p>
+<div><h4>¿A qué hora?</h4><select id="mhour" class="inp">${hours}</select><p class="small mut">El correo llega a esa hora o unos minutos después (el servicio revisa cada 15 minutos).</p>
 <label class="chk"><input type="checkbox" id="mempty" ${c.empty ? 'checked' : ''}> Avisarme también cuando no haya practicado</label>
 <h4>Nombre de este equipo</h4><input id="mdev" class="inp" style="width:100%" value="${esc(c.devName)}" maxlength="30"><p class="small mut">Aparece en el correo para saber desde dónde estudió.</p></div></div>
 <h4>Dirección del servicio</h4><input id="mailurl" class="inp" style="width:100%" value="${esc(mailURL())}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" spellcheck="false">
 <p class="small mut">Se obtiene una sola vez al instalar el servicio en tu cuenta de Google (ver el instructivo “Reporte por correo”). Es la misma dirección en todos los equipos.</p>
 <div class="acts"><button class="btn pri" data-act="mailsave">Guardar configuración</button><button class="btn" data-act="mailtest">Enviar un correo de prueba ahora</button></div>
-<p class="small">Estado: <b>${c.on ? `activado · ${freqText(c)} · próximo correo ${nextSendText(c)}` : 'desactivado'}</b><br><span class="mut">Última sincronización de este equipo: ${fx(c.ok)}${c.err ? ` · último intento con problema: ${esc(c.err)}` : ''}${c.unconfirmed && !c.err ? ' (el navegador no permitió confirmar la respuesta)' : ''}</span></p></div>`;
+${c.srv ? `<p class="small" style="padding:8px;border-radius:8px;background:${c.srv.disparador && !c.srv.error ? '#F0FDF4' : '#FEF2F2'}">Servicio en Google: ${c.srv.disparador ? '✅ revisión automática activa' + (c.srv.ultimaRevision ? ` (última revisión ${esc(c.srv.ultimaRevision)})` : ' (todavía no se ha ejecutado)') : '⚠️ <b>la revisión automática NO está activa</b>: en el editor del script ejecuta la función <code>instalar</code>'}${c.srv.ultimoCorreo ? ` · último correo programado: ${esc(c.srv.ultimoCorreo)}` : ''}${c.srv.error ? ` · <b>error:</b> ${esc(c.srv.error)}` : ''}</p>` : ''}<p class="small">Estado: <b>${c.on ? `activado · ${freqText(c)} · próximo correo ${nextSendText(c)}` : 'desactivado'}</b><br><span class="mut">Última sincronización de este equipo: ${fx(c.ok)}${c.err ? ` · último intento con problema: ${esc(c.err)}` : ''}${c.unconfirmed && !c.err ? ' (el navegador no permitió confirmar la respuesta)' : ''}</span></p></div>`;
 }
 function readMailForm() {
   const c = mailCfg(), f = ($('input[name=mfreq]:checked') || {}).value || c.freq;
